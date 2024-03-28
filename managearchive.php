@@ -7,6 +7,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     exit;
 }
 
+$id = $_SESSION["id"];
 $username = $_SESSION["username"];
 $type = $_SESSION["type"];
 
@@ -21,17 +22,25 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $lists = $result->fetch_all(MYSQLI_ASSOC);
 
-// Get subscribers
-$sql = "SELECT id, email, list, unsubcode, subdate, status FROM subscribers";
+
+// Get archive
+$sql = "SELECT id, list, subject, message, author, date FROM archive";
 $stmt = mysqli_prepare($link, $sql);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
-$subscribers = $result->fetch_all(MYSQLI_ASSOC);
+$archive = $result->fetch_all(MYSQLI_ASSOC);
+
+// Get users
+$sql = "SELECT id, username, type FROM users";
+$stmt = mysqli_prepare($link, $sql);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$users = $result->fetch_all(MYSQLI_ASSOC);
 
 // GET actions
 //   delete entry
 if (isset($_GET["del"])) {
-    $sql = "DELETE FROM subscribers WHERE id = ?";
+    $sql = "DELETE FROM archive WHERE id = ?";
     $stmt = mysqli_prepare($link, $sql);
     mysqli_stmt_bind_param($stmt, "s", $param_id);
     $param_id = $_GET["del"];
@@ -44,12 +53,13 @@ if (isset($_GET["del"])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // add entry
     if (isset($_POST["add"])) {
-        $sql = "INSERT INTO subscribers (email, list, unsubcode) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO archive (list, subject, message, author) VALUES (?, ?, ?, ?)";
         $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "sss", $param_email, $param_list, $param_unsubcode);
-        $param_email = $_POST["email"];
+        mysqli_stmt_bind_param($stmt, "ssss", $param_list, $param_subject, $param_message, $param_author);
         $param_list = $_POST["list"];
-        $param_unsubcode = substr(sha1(random_bytes(64)), 0, 16); // random 16 character code
+        $param_subject = $_POST["subject"];
+        $param_message = $_POST["message"];
+        $param_author = $_POST["author"];
 
         if (!mysqli_stmt_execute($stmt) || (mysqli_stmt_affected_rows($stmt) != 1)) {
             echo "SQL error.";
@@ -58,12 +68,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // edit entry
     if (isset($_POST["save"])) {
-        $sql = "UPDATE subscribers SET email = ?, list = ?, status = ? WHERE id = ?";
+        $sql = "UPDATE archive SET subject = ?, message = ? WHERE id = ?";
         $stmt = mysqli_prepare($link, $sql);
-        mysqli_stmt_bind_param($stmt, "ssss", $param_email, $param_list, $param_status, $param_id);
-        $param_email = $_POST["email"];
-        $param_list = $_POST["list"];
-        $param_status = $_POST["status"];
+        mysqli_stmt_bind_param($stmt, "sss", $param_subject, $param_message, $param_id);
+        $param_subject = $_POST["subject"];
+        $param_message = $_POST["message"];
         $param_id = $_POST["id"];
 
         if (!mysqli_stmt_execute($stmt) || (mysqli_stmt_affected_rows($stmt) != 1)) {
@@ -81,11 +90,20 @@ function getlistbyid($id) {
     }
 }
 
-function getsubscriberbyid($id) {
-    global $subscribers;
-    foreach ($subscribers as $subscriber) {
-        if ($subscriber["id"] == $id) {
-            return $subscriber;
+function getuserbyid($id) {
+    global $users;
+    foreach ($users as $user) {
+        if ($user["id"] == $id) {
+            return $user;
+        }
+    }
+}
+
+function getmessagebyid($id) {
+    global $archive;
+    foreach ($archive as $msg) {
+        if ($msg["id"] == $id) {
+            return $msg;
         }
     }
 }
@@ -108,19 +126,16 @@ function getsubscriberbyid($id) {
             <div class="row">
                 <div class="col8">
                     <h2 class="center">ARFNET Mailing List Manager</h2>
-                    <h3>Subscribers</h3>
+                    <h3>Archive manage</h3>
 
                     <?php
                     if (isset($_GET["edit"])) {
-                        $subscriber = getsubscriberbyid($_GET["edit"]);
-                        $list_options = "";
-                        foreach ($lists as $list)
-                            $list_options .= "<option value=\"".$list["id"]."\" ".($subscriber["list"] == $list["id"] ? "selected" : "").">".$list["name"]."</option>";
-                        echo "<div class=\"form\"><h3>Edit subscriber ".$subscriber["id"]."</h3><form action=\"".$_SERVER["SCRIPT_NAME"]."\" method=\"post\">\n"
-                            ."<label>Email</label><br><input type=\"text\" name=\"email\" value=\"".$subscriber["email"]."\"><br>\n"
-                            ."<label>List</label><br><select name=\"list\">$list_options</select><br>\n"
-                            ."<label>Status</label><br><select name=\"status\"><option value=\"active\" ".($subscriber["status"] == "active" ? "selected" : "").">active</option><option value=\"inactive\" ".($subscriber["status"] == "inactive" ? "selected" : "").">inactive</option></select><br>\n"
-                            ."<input type=\"hidden\" name=\"id\" value=\"".$subscriber["id"]."\">"
+                        $msg = getmessagebyid($_GET["edit"]);
+                        echo "<div class=\"form\"><h3>Edit message ".$msg["id"]."</h3><form action=\"".$_SERVER["SCRIPT_NAME"]."\" method=\"post\">\n"
+                            ."<label>List</label><br><label>".getlistbyid($msg["list"])["name"]."</lavel><br>\n"
+                            ."<label>Subject</label><br><input type=\"text\" name=\"subject\" value=\"".$msg["subject"]."\"><br>\n"
+                            ."<label>Message</label><br><textarea name=\"message\" rows=\"20\" cols=\"80\">".$msg["message"]."</textarea><br>\n"
+                            ."<input type=\"hidden\" name=\"id\" value=\"".$msg["id"]."\">"
                             ."<br><input type=\"submit\" name=\"save\" value=\"Save\"><a href=\"".$_SERVER["SCRIPT_NAME"]."\">cancel</a>"
                             ."</form></div>";
                     }
@@ -128,10 +143,11 @@ function getsubscriberbyid($id) {
                     if (isset($_GET["add"])) {
                         foreach ($lists as $list)
                             $list_options .= "<option value=\"".$list["id"]."\">".$list["name"]."</option>";
-                        echo "<div class=\"form\"><h3>Add subscriber</h3><form action=\"".$_SERVER["SCRIPT_NAME"]."\" method=\"post\">\n"
-                            ."<label>Email</label><br><input type=\"text\" name=\"email\"><br>\n"
+                        echo "<div class=\"form\"><h3>Add message</h3><form action=\"".$_SERVER["SCRIPT_NAME"]."\" method=\"post\">\n"
                             ."<label>List</label><br><select name=\"list\">$list_options</select><br>\n"
-                            ."<label>Status</label><br><select name=\"status\"><option value=\"active\">active</option><option value=\"inactive\">inactive</option></select><br>\n"
+                            ."<label>Subject</label><br><input type=\"text\" name=\"subject\"><br>\n"
+                            ."<label>Message</label><br><textarea name=\"message\" rows=\"20\" cols=\"80\">".$msg["message"]."</textarea><br>\n"
+                            ."<input type=\"hidden\" name=\"author\" value=\"".$id."\"><br>\n"
                             ."<br><input type=\"submit\" name=\"add\" value=\"Add\"><a href=\"".$_SERVER["SCRIPT_NAME"]."\">cancel</a>"
                             ."</form></div>";
                     }
@@ -139,16 +155,16 @@ function getsubscriberbyid($id) {
 
                     <a href="?add">add</a>
                     <table>
-                        <tr><th>id</th><th>email</th><th>list</th><th>unsubcode</th><th>subdate</th><th>status</th><th>actions</th></tr>
+                        <tr><th>id</th><th>list</th><th>subject</th><th>message</th><th>author</th><th>date</th><th>actions</th></tr>
                         <?php
-                        foreach ($subscribers as $sub) {
-                            echo "<tr><td>".$sub["id"]."</td>"
-                            ."<td>".$sub["email"]."</td>"
-                            ."<td>".getlistbyid($sub["list"])["name"]."</td>"
-                            ."<td>".$sub["unsubcode"]."</td>"
-                            ."<td>".$sub["subdate"]."</td>"
-                            ."<td>".$sub["status"]."</td>"
-                            ."<td><a href=\"?del=".$sub["id"]."\">del</a> <a href=\"?edit=".$sub["id"]."\">edit</a></td></tr>\n";
+                        foreach ($archive as $msg) {
+                            echo "<tr><td>".$msg["id"]."</td>"
+                            ."<td>".getlistbyid($msg["list"])["name"]."</td>"
+                            ."<td>".$msg["subject"]."</td>"
+                            ."<td><details><summary></summary><pre>".$msg["message"]."</pre></td>"
+                            ."<td>".getuserbyid($msg["author"])["username"]."</td>"
+                            ."<td>".$msg["date"]."</td>"
+                            ."<td><a href=\"?del=".$msg["id"]."\">del</a> <a href=\"?edit=".$msg["id"]."\">edit</a></td></tr>\n";
                         }
                         ?>
                     </table>

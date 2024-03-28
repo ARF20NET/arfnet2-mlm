@@ -29,17 +29,33 @@ $result = mysqli_stmt_get_result($stmt);
 $subscribers = $result->fetch_all(MYSQLI_ASSOC);
 
 // Get archive
-$sql = "SELECT id, list, message, author, date FROM archive";
+$sql = "SELECT id, list, subject, message, author, date FROM archive";
 $stmt = mysqli_prepare($link, $sql);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $archive = $result->fetch_all(MYSQLI_ASSOC);
+
+// Get users
+$sql = "SELECT id, username, type FROM users";
+$stmt = mysqli_prepare($link, $sql);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$users = $result->fetch_all(MYSQLI_ASSOC);
 
 function getlistbyid($id) {
     global $lists;
     foreach ($lists as $list) {
         if ($list["id"] == $id) {
             return $list;
+        }
+    }
+}
+
+function getuserbyid($id) {
+    global $users;
+    foreach ($users as $user) {
+        if ($user["id"] == $id) {
+            return $user;
         }
     }
 }
@@ -51,7 +67,7 @@ function getlistbyid($id) {
     <head>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="/style.css">
-        <title>ARFNET CSTIMS</title>
+        <title>ARFNET MLM</title>
     </head>
     <body>
         <header><a href="https://arf20.com/">
@@ -89,10 +105,10 @@ function getlistbyid($id) {
                         <div class="col3">
                             <h3>Archive</h3>
                             <table>
-                                <tr><th>list</th><th>message</th><th>author</th></tr>
+                                <tr><th>list</th><th>subject</th><th>message</th><th>author</th></tr>
                                 <?php
                                 foreach ($archive as $msg) {
-                                    echo "<tr><td>".$msg["list"]."</td><td><details><summary></summary>".$msg["message"]."</details></td><td>".$msg["author"]."</tr>\n";
+                                    echo "<tr><td>".getlistbyid($msg["list"])["name"]."</td><td>".$msg["subject"]."</td><td><details><summary></summary><pre>".$msg["message"]."</pre></details></td><td>".getuserbyid($msg["author"])["username"]."</tr>\n";
                                 }
                                 ?>
                             </table>
@@ -105,6 +121,7 @@ function getlistbyid($id) {
                     <h3><a href="/managelists.php">Manage lists</h2>
                     <h3><a href="/managesubs.php">Manage subscribers</h2>
                     <h3><a href="/managearchive.php">Manage archive</h2>
+                    <h3><a href="/post.php">Post</h2>
                 </div>
             </div>
         </main>

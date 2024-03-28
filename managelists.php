@@ -81,7 +81,7 @@ function getlistbyid($id) {
     <head>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="/style.css">
-        <title>ARFNET CSTIMS</title>
+        <title>ARFNET MLM</title>
     </head>
     <body>
         <header><a href="https://arf20.com/">
@@ -91,9 +91,8 @@ function getlistbyid($id) {
         <main>
             <div class="row">
                 <div class="col8">
-                    <h2 class="center">ARFNET Client Service Ticket and Invoice Management System</h2>
-                    <h3><?php echo strtoupper($type[0]).substr($type, 1); ?> panel</h3>
-                    <h3>Service offerings</h3>
+                    <h2 class="center">ARFNET Mailing List Manager</h2>
+                    <h3>Lists</h3>
 
                     <?php
                     if (isset($_GET["edit"])) {

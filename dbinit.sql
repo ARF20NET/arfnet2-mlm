@@ -21,6 +21,7 @@ CREATE TABLE `arfnet2`.`subscribers` (
 CREATE TABLE `arfnet2`.`archive` (
     `id` INT NOT NULL AUTO_INCREMENT ,
     `list` INT NOT NULL ,
+    `subject` VARCHAR(1024) NOT NULL ,
     `message` TEXT NOT NULL ,
     `author` INT NOT NULL ,
     `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
