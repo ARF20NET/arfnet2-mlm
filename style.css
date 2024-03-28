@@ -41,6 +41,11 @@ body {
     width: 20%;
 }
 
+.col3 {
+    float: left;
+    width: 30%;
+}
+
 .row:after {
     content: "";
     display: table;

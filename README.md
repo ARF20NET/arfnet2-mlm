@@ -18,6 +18,8 @@ FILES
         List admnistration
     managesubs.php
         Subscriber administration
+    managearchive.php
+        Archive administration
     publish.php
         Publish form
 
@@ -26,5 +28,7 @@ SQL
         id, name, type
     subscribers
         id, email, list id, unsub code, date, status { active, inactive }
+    archive
+        id, list, message, author, date
 
 ```

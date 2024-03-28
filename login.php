@@ -97,7 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>CSTIMS Login</title>
+        <title>MLM Login</title>
         <link rel="stylesheet" type="text/css" href="/style.css">
     </head>
     <body>
