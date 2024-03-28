@@ -1,0 +1,77 @@
+header *{
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.title {
+	font-size: 36px;
+    vertical-align: middle;
+}
+
+body {
+    background-image: url("tile1.jpg");
+    background-repeat: repeat;
+}
+
+.fst {
+    font-size: 150%;
+}
+
+.sec {
+    margin-left: 20px;
+    font-size: 150%;
+}
+
+.col {
+    float: left;
+}
+
+.col5 {
+    float: left;
+    width: 50%;
+}
+
+.col8 {
+    float: left;
+    width: 80%;
+}
+
+.col2 {
+    float: left;
+    width: 20%;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.img {
+    width: 60%;
+}
+
+.wrapper{
+	width: 350px;
+	padding: 20px;
+	border-style: double;
+	margin: auto;
+	margin-top: 200px;
+}
+
+.form {
+    width: fit-content;
+	padding: 20px;
+    border-style: double;
+}
+
+.border {
+    width: fit-content;
+	padding: 20px;
+    border: 1px solid black;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
