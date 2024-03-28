@@ -35,6 +35,15 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $archive = $result->fetch_all(MYSQLI_ASSOC);
 
+function getlistbyid($id) {
+    global $lists;
+    foreach ($lists as $list) {
+        if ($list["id"] == $id) {
+            return $list;
+        }
+    }
+}
+
 ?>
 
 <!doctype html>
@@ -72,7 +81,7 @@ $archive = $result->fetch_all(MYSQLI_ASSOC);
                                 <tr><th>email</th><th>list</th><th>status</th></tr>
                                 <?php
                                 foreach ($subscribers as $sub) {
-                                    echo "<tr><td>".$sub["email"]."</td><td>".$sub["list"]."</td><td>".$sub["status"]."</tr>\n";
+                                    echo "<tr><td>".$sub["email"]."</td><td>".getlistbyid($sub["list"])["name"]."</td><td>".$sub["status"]."</tr>\n";
                                 }
                                 ?>
                             </table>
