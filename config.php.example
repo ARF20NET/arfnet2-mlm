@@ -11,9 +11,7 @@ define('MAIL_SERVER', 'mail.example.com');
 define('MAIL_PORT', 587);
 define('MAIL_USER', 'user');
 define('MAIL_PASSWORD', 'password');
-define('MAIL_FROM', 'system@example.com');
-
-define('DOMAIN', 'dash.example.com');
+define('MAIL_DOMAIN', 'example.com');
  
 /* Attempt to connect to MySQL database */
 $link = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
@@ -26,14 +24,21 @@ if($link === false){
 require("/usr/share/php/libphp-phpmailer/autoload.php");
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
-$mailer = new PHPMailer();
-$mailer->isSMTP();
-$mailer->Host = MAIL_SERVER;
-$mailer->Port = MAIL_PORT;
-$mailer->SMTPAuth = true;
-$mailer->Username = MAIL_USER;
-$mailer->Password = MAIL_PASSWORD;
-$mailer->setFrom(MAIL_FROM);
-$mailer->isHTML(false);
+
+$mailer = null;
+
+function new_mail() {
+    global $mailer;
+    $mailer = new PHPMailer();
+    $mailer->isSMTP();
+    $mailer->Host = MAIL_SERVER;
+    $mailer->Port = MAIL_PORT;
+    $mailer->SMTPAuth = true;
+    $mailer->Username = MAIL_USER;
+    $mailer->Password = MAIL_PASSWORD;
+    $mailer->isHTML(false);
+}
+
+new_mail();
 
 ?>

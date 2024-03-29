@@ -46,6 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $subs = $result->fetch_all(MYSQLI_ASSOC);
 
         $mailer->setFrom(getlistbyid($_POST["list"])["name"]."@".MAIL_DOMAIN);
+        $mailer->addReplyTo($username."@".MAIL_DOMAIN);
         foreach ($subs as $sub)
             $mailer->AddBCC($sub["email"]);
         $mailer->Subject = $_POST["subject"];
